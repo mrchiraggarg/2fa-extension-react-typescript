@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Account, getAccounts } from './utils/storage';
+import { Account, getAccounts, getSettings, exportEncryptedData, importEncryptedData } from './utils/storage';
 import AccountComponent from './components/Account';
 import AddAccountForm from './components/AddAccountForm';
 import './popup.css';
@@ -8,9 +8,12 @@ const App: React.FC = () => {
   const [locked, setLocked] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [timeLeft, setTimeLeft] = useState<number>(30);
-  const [settings, setSettings] = useState<Settings>();
+  const [settings, setSettings] = useState<any>();
   const [passInput, setPassInput] = useState('');
   const [failedBiometric, setFailedBiometric] = useState(false);
+  const [darkMode, setDarkMode] = useState<boolean>(
+    localStorage.getItem('dark') === 'true'
+  );
 
   const handleUnlock = async () => {
     try {
@@ -21,42 +24,20 @@ const App: React.FC = () => {
         setFailedBiometric(true);
       }
     } catch (e) {
-      setFailedBiometric(true); // fallback to passcode
+      setFailedBiometric(true);
     }
   };
 
   const handlePasscodeSubmit = async () => {
     const hashed = await hash(passInput);
-    if (hashed === settings?.passcode) {
-      setLocked(false);
-    } else {
-      alert('Wrong passcode');
-    }
+    if (hashed === settings?.passcode) setLocked(false);
+    else alert('Wrong passcode');
   };
 
-  useEffect(() => {
-    getSettings().then(setSettings);
-  }, []);
-
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    const resetTimer = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => setLocked(true), 3 * 60 * 1000); // 3 min
-    };
-
-    ['click', 'keydown', 'mousemove'].forEach(event =>
-      window.addEventListener(event, resetTimer)
-    );
-
-    resetTimer();
-    return () => clearTimeout(timeout);
-  }, []);
-
-
-  const load = async () => {
+  const loadAccounts = async () => {
     const data = await getAccounts();
-    setAccounts(data);
+    const sorted = [...data].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+    setAccounts(sorted);
   };
 
   const handleExport = async () => {
@@ -74,104 +55,95 @@ const App: React.FC = () => {
     const file = e.target.files[0];
     const text = await file.text();
     await importEncryptedData(text);
-    load();
+    loadAccounts();
   };
+
+  useEffect(() => {
+    getSettings().then(setSettings);
+    Notification.requestPermission();
+  }, []);
+
+  useEffect(() => {
+    if (settings?.darkMode) document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+  }, [settings]);
+
+  useEffect(() => {
+    localStorage.setItem('dark', darkMode.toString());
+  }, [darkMode]);
 
   useEffect(() => {
     const updateTime = () => {
       const now = Math.floor(Date.now() / 1000);
-      setTimeLeft(30 - (now % 30));
+      const newTime = 30 - (now % 30);
+      setTimeLeft(newTime);
+
+      if (newTime === 30 && Notification.permission === 'granted') {
+        new Notification('🔐 OTPs Refreshed', {
+          body: 'Your 2FA codes have just been updated.',
+        });
+      }
     };
 
-    updateTime(); // initialize immediately
+    updateTime();
     const timer = setInterval(() => {
       updateTime();
-      load(); // refresh OTP every second
+      loadAccounts();
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
 
-  const [darkMode, setDarkMode] = useState<boolean>(
-    localStorage.getItem('dark') === 'true'
-  );
-
   useEffect(() => {
-    // Apply dark mode
-    useEffect(() => {
-      if (settings?.darkMode) document.body.classList.add('dark');
-      else document.body.classList.remove('dark');
-    }, [settings]);
-
-    localStorage.setItem('dark', darkMode.toString());
-  }, [darkMode]);
-
-  const load = async () => {
-    const data = await getAccounts();
-    const sorted = [...data].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
-    setAccounts(sorted);
-  };
-
-  useEffect(() => {
-    Notification.requestPermission();
-  }, []);
-
-
-  if (locked && !failedBiometric) {
-    return (
-      <div className="App">
-        <h3>🔒 Locked</h3>
-        <button onClick={handleUnlock}>Unlock</button>
-      </div>
-    );
-  } else if (locked && failedBiometric) {
-    return (
-      <div className="App">
-        <h3>🔐 Enter Passcode</h3>
-        <input type="password" value={passInput} onChange={e => setPassInput(e.target.value)} />
-        <button onClick={handlePasscodeSubmit}>Unlock</button>
-      </div>
-    );
-  } else if (locked) {
-    const handleUnlock = async () => {
-      try {
-        await navigator.credentials.get({
-          publicKey: {
-            challenge: new Uint8Array([1, 2, 3]),
-            timeout: 60000,
-            allowCredentials: [],
-            userVerification: 'required',
-          },
-        });
-        setLocked(false);
-      } catch (err) {
-        alert('Authentication failed!');
-      }
+    let timeout: NodeJS.Timeout;
+    const resetTimer = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => setLocked(true), 3 * 60 * 1000);
     };
 
-    return (
-      <div className="App">
-        <h3>🔒 Locked due to inactivity</h3>
-        <button onClick={() => setLocked(false)}>Unlock</button>
-      </div>
+    ['click', 'keydown', 'mousemove'].forEach(event =>
+      window.addEventListener(event, resetTimer)
     );
-  } else {
+
+    resetTimer();
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (locked) {
     return (
       <div className="App">
-        <input type="file" accept="application/json" onChange={handleImport} />
-        <button onClick={handleExport}>Export Backup</button>
-        <button className="toggle-dark" onClick={() => setDarkMode(!darkMode)}>
-          {darkMode ? '☀️' : '🌙'}
-        </button>
-        <h2>2FA Authenticator</h2>
-        <h3>Next code refresh in: {timeLeft}s</h3>
-        {accounts.map((acc, i) => (
-          <AccountComponent account={acc} key={i} onDelete={load} />
-        ))}
-        <AddAccountForm onAdd={load} />
+        <h3>{failedBiometric ? '🔐 Enter Passcode' : '🔒 Locked'}</h3>
+        {failedBiometric ? (
+          <>
+            <input
+              type="password"
+              value={passInput}
+              onChange={e => setPassInput(e.target.value)}
+            />
+            <button onClick={handlePasscodeSubmit}>Unlock</button>
+          </>
+        ) : (
+          <button onClick={handleUnlock}>Unlock</button>
+        )}
       </div>
     );
   }
+
+  return (
+    <div className="App">
+      <input type="file" accept="application/json" onChange={handleImport} />
+      <button onClick={handleExport}>Export Backup</button>
+      <button className="toggle-dark" onClick={() => setDarkMode(!darkMode)}>
+        {darkMode ? '☀️' : '🌙'}
+      </button>
+      <h2>2FA Authenticator</h2>
+      <h3>Next code refresh in: {timeLeft}s</h3>
+      {accounts.map((acc, i) => (
+        <AccountComponent account={acc} key={i} onDelete={loadAccounts} />
+      ))}
+      <AddAccountForm onAdd={loadAccounts} />
+    </div>
+  );
 };
 
 export default App;
