@@ -1,0 +1,21 @@
+{
+    "name": "Secure 2FA",
+    "short_name": "2FA",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#000000",
+    "description": "A secure 2FA generator",
+    "icons": [
+      {
+        "src": "/icon-192.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "/icon-512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ]
+  }
+  

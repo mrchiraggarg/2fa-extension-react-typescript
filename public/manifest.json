@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "2FA Authenticator",
+  "version": "1.0",
+  "description": "A simple TOTP-based 2FA extension",
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["<all_urls>"],
+  "icons": {
+    "128": "icon.png"
+  }
+}
