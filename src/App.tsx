@@ -165,13 +165,9 @@ const App: React.FC = () => {
           {darkMode ? '☀️' : '🌙'}
         </button>
       </div>
-      <h2 style={{ textAlign: 'center' }}>2FA Authenticator</h2>
-      <h3 style={{ textAlign: 'center' }}>Next code refresh in: {timeLeft}s</h3>
-      {accounts.map((acc, i) => (
-        <AccountComponent account={acc} key={i} onDelete={loadAccounts} onUpdate={loadAccounts} />
-      ))}
-
+      
       <button
+        style={{ width: '100%', display: 'block', margin: '0 auto' }}
         onClick={() => {
           console.log('Settings clicked');
           setShowSettings(!showSettings);
@@ -181,6 +177,11 @@ const App: React.FC = () => {
       </button>
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
+      <h2 style={{ textAlign: 'center' }}>2FA Authenticator</h2>
+      <h3 style={{ textAlign: 'center' }}>Next code refresh in: {timeLeft}s</h3>
+      {accounts.map((acc, i) => (
+        <AccountComponent account={acc} key={i} onDelete={loadAccounts} onUpdate={loadAccounts} />
+      ))}
 
       <AddAccountForm onAdd={loadAccounts} />
     </div>
