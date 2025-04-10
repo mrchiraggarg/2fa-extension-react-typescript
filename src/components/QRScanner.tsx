@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import React, { useRef } from 'react';
+import jsQR from 'jsqr';
 
 type Props = {
   onScanSuccess: (url: string) => void;
@@ -8,60 +8,54 @@ type Props = {
 };
 
 const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
-  const scannerRef = useRef<HTMLDivElement>(null);
-  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    if (!scannerRef.current) return;
+  const handleFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    const html5QrCode = new Html5Qrcode(scannerRef.current.id);
-    html5QrCodeRef.current = html5QrCode;
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    Html5Qrcode.getCameras().then((devices) => {
-      if (devices && devices.length) {
-        const cameraId = devices[0].id;
-        html5QrCode.start(
-          cameraId,
-          { fps: 10, qrbox: 250 },
-          (scannedText) => {
-            if (!scannedText.startsWith('otpauth://')) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-            try {
-              const url = new URL(scannedText);
-              const secret = url.searchParams.get('secret') || '';
-              const label = decodeURIComponent(url.pathname).split(':')[1]?.replace('/', '') || 'Unnamed';
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
 
-              if (secret) {
-                onScan(secret, label);
-                onScanSuccess(scannedText);
-                html5QrCode.stop().then(() => {
-                  console.log('QR scanning stopped.');
-                });
-              }
-            } catch (err) {
-              alert('Invalid QR code');
-              console.error(err);
-            }
-          },
-          (errorMessage) => {
-            // You can ignore scan errors, they're common
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+      if (code && code.data.startsWith('otpauth://')) {
+        try {
+          const url = new URL(code.data);
+          const secret = url.searchParams.get('secret') || '';
+          const label = decodeURIComponent(url.pathname).split(':')[1]?.replace('/', '') || 'Unnamed';
+
+          if (secret) {
+            onScan(secret, label);
+            onScanSuccess(code.data);
+          } else {
+            alert('Secret not found in QR code.');
           }
-        );
+        } catch (err) {
+          alert('Failed to parse QR content.');
+        }
+      } else {
+        alert('No valid QR code found.');
       }
-    }).catch((err) => {
-      console.error('Camera error:', err);
-      alert('Camera access denied or not found.');
-    });
-
-    return () => {
-      html5QrCode.stop().catch((err) => console.error('Failed to stop QR scanner', err));
     };
-  }, []);
+  };
 
   return (
     <div style={{ padding: '1rem' }}>
-      <h3>📷 Scan QR Code</h3>
-      <div id="qr-reader" ref={scannerRef} style={{ width: '100%', height: '280px' }} />
+      <h3>📸 Upload a QR Code</h3>
+      <input type="file" accept="image/*" onChange={handleFile} />
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
       <button onClick={onClose} style={{ marginTop: '1rem' }}>Cancel</button>
     </div>
   );
