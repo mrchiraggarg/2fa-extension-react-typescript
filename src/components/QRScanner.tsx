@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import QrScanner from 'react-qr-scanner';
 
 type Props = {
@@ -8,6 +8,13 @@ type Props = {
 };
 
 const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
+
+    useEffect(() => {
+        navigator.mediaDevices.getUserMedia({ video: true }).catch((err) => {
+            console.error('Camera access denied:', err);
+        });
+    }, []);
+
     const handleScan = (data: { text?: string } | null) => {
         if (!data?.text) return;
 
