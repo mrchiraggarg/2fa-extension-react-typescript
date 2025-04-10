@@ -122,7 +122,7 @@ const App: React.FC = () => {
     let timeout: NodeJS.Timeout;
     const resetTimer = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => setLocked(true), 3 * 60 * 1000);
+      timeout = setTimeout(() => setLocked(true), 3);
     };
 
     ['click', 'keydown', 'mousemove'].forEach(event =>
