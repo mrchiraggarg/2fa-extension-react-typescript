@@ -20,7 +20,7 @@ const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
                 setCameraError('Camera permission denied or not available.');
             });
     }, []);
-
+    
     const handleScan = (data: { text?: string } | null) => {
         if (!data?.text) return;
 
