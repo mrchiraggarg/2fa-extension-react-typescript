@@ -20,7 +20,6 @@
     "process": "^0.11.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-qr-reader": "^3.0.0-beta-1",
     "react-qr-scanner": "^1.0.0-alpha.11",
     "react-scripts": "5.0.1",
     "stream-browserify": "^3.0.0",
@@ -28,6 +27,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "postinstall": "npm install --legacy-peer-deps",
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
