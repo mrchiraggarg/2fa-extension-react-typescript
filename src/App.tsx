@@ -155,7 +155,7 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <div className="toolbar">
+      <div className="toolbar header-actions">
         <label className="import-label">
           📁 Import
           <input type="file" accept="application/json" onChange={handleImport} style={{ display: 'none' }} />
