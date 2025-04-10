@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import QrScanner from 'react-qr-scanner';
 
 type Props = {
@@ -8,18 +8,23 @@ type Props = {
 };
 
 const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
+    const [cameraAllowed, setCameraAllowed] = useState(true);
+    const [cameraError, setCameraError] = useState<string | null>(null);
 
     useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ video: true }).catch((err) => {
-            console.error('Camera access denied:', err);
-        });
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(() => setCameraAllowed(true))
+            .catch((err) => {
+                console.error('Camera access denied:', err);
+                setCameraAllowed(false);
+                setCameraError('Camera permission denied or not available.');
+            });
     }, []);
 
     const handleScan = (data: { text?: string } | null) => {
         if (!data?.text) return;
 
         const scanned = data.text;
-
         try {
             if (scanned.startsWith('otpauth://')) {
                 const url = new URL(scanned);
@@ -43,26 +48,52 @@ const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
 
     const handleError = (err: any) => {
         console.error('QR Scan Error:', err);
+        setCameraError('Error accessing camera.');
     };
 
     const previewStyle = {
+        height: 240,
         width: '100%',
-        maxWidth: '400px',
-        margin: '0 auto',
+        objectFit: 'cover' as const,
         borderRadius: '12px',
-        overflow: 'hidden',
     };
 
     return (
-        <div style={{ height: '300px', position: 'relative' }}>
-            <h3>Scan QR Code</h3>
-            <QrScanner
-                delay={300}
-                onError={handleError}
-                onScan={handleScan}
-                style={{ width: '100%', height: '100%' }}
-            />
-            <button onClick={onClose} style={{ position: 'absolute', top: 10, right: 10 }}>
+        <div style={{
+            minHeight: '350px',
+            padding: '1rem',
+            textAlign: 'center',
+            position: 'relative',
+            background: '#111',
+            color: '#fff',
+            borderRadius: '12px'
+        }}>
+            <h3 style={{ marginBottom: '1rem' }}>Scan QR Code</h3>
+
+            {!cameraAllowed ? (
+                <p style={{ color: 'red' }}>{cameraError}</p>
+            ) : (
+                <QrScanner
+                    delay={300}
+                    onError={handleError}
+                    onScan={handleScan}
+                    style={previewStyle}
+                />
+            )}
+
+            <button
+                onClick={onClose}
+                style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    background: 'transparent',
+                    color: '#fff',
+                    border: 'none',
+                    fontSize: '1.2rem',
+                    cursor: 'pointer',
+                }}
+            >
                 ✖
             </button>
         </div>
