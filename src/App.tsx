@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Account, getAccounts, getSettings, exportEncryptedData, importEncryptedData } from './utils/storage';
+import { Account, getAccounts, exportEncryptedData, importEncryptedData } from './utils/storage';
+import { getSettings, saveSettings } from './utils/settings';
 import AccountComponent from './components/Account';
 import AddAccountForm from './components/AddAccountForm';
+import { hash } from './utils/hash';
 import './popup.css';
+
 
 const App: React.FC = () => {
   const [locked, setLocked] = useState(false);
