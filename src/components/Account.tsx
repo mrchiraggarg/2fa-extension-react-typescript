@@ -1,6 +1,6 @@
 import React from 'react';
 import { authenticator } from 'otplib';
-import { Account } from '../utils/storage';
+import { Account, getAccounts, saveAccounts } from '../utils/storage';
 
 type Props = {
   account: Account;
@@ -8,8 +8,7 @@ type Props = {
   onUpdate: () => void;
 };
 
-
-const AccountComponent: React.FC<Props> = ({ account }) => {
+const AccountComponent: React.FC<Props> = ({ account, onDelete, onUpdate }) => {
   const otp = authenticator.generate(account.secret);
 
   const handlePinToggle = async () => {
@@ -22,8 +21,8 @@ const AccountComponent: React.FC<Props> = ({ account }) => {
   };
 
   const handleDelete = async () => {
-    const existing = await getAccounts();
-    const updated = existing.filter(a => a.label !== account.label);
+    const list = await getAccounts();
+    const updated = list.filter(acc => acc.label !== account.label);
     await saveAccounts(updated);
     onDelete();
   };
