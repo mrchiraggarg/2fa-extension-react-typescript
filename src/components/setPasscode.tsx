@@ -1,4 +1,5 @@
-import { getSettings, saveSettings } from './utils/settings';
+import { useState } from 'react';
+import { getSettings, saveSettings } from '../utils/settings';
 
 export default function SetPasscode() {
   const [code, setCode] = useState('');
