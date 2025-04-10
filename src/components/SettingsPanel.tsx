@@ -1,36 +1,64 @@
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { getSettings, saveSettings } from '../utils/settings';
-import { Settings } from '../types/types';
+import { hash } from '../utils/hash';
 
-export default function SettingsPanel() {
-    const [settings, setSettings] = useState<Settings | null>(null);
+const SettingsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [biometrics, setBiometrics] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [newPasscode, setNewPasscode] = useState('');
 
-    useEffect(() => {
-        getSettings().then(setSettings);
-    }, []);
+  React.useEffect(() => {
+    getSettings().then((s) => {
+      setBiometrics(s.biometrics);
+      setDarkMode(s.darkMode);
+    });
+  }, []);
 
-    const handleToggle = (key: keyof Settings) => {
-        if (!settings) return;
-        const updated = { ...settings, [key]: !settings[key] };
-        setSettings(updated);
-        saveSettings(updated);
+  const handleSave = async () => {
+    const updates: any = {
+      biometrics,
+      darkMode,
     };
+    if (newPasscode) {
+      updates.passcode = await hash(newPasscode);
+    }
+    await saveSettings(updates);
+    alert('Settings updated');
+    onClose();
+    window.location.reload(); // refresh UI for dark mode or other changes
+  };
 
-    if (!settings) return <div>Loading...</div>;
+  return (
+    <div className="settings-panel">
+      <h3>Settings</h3>
+      <label>
+        <input
+          type="checkbox"
+          checked={darkMode}
+          onChange={() => setDarkMode(!darkMode)}
+        />
+        Enable Dark Mode
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={biometrics}
+          onChange={() => setBiometrics(!biometrics)}
+        />
+        Enable Biometrics
+      </label>
+      <label>
+        Set New Passcode:
+        <input
+          type="password"
+          value={newPasscode}
+          onChange={(e) => setNewPasscode(e.target.value)}
+        />
+      </label>
+      <button onClick={handleSave}>Save</button>
+      <button onClick={onClose}>Cancel</button>
+    </div>
+  );
+};
 
-    return (
-        <div className="settings">
-            <h3>⚙️ Settings</h3>
-            {Object.entries(settings).map(([key, value]) => (
-                <label key={key}>
-                    <input
-                        type="checkbox"
-                        checked={Boolean(value)}
-                        onChange={() => handleToggle(key as keyof Settings)}
-                    />
-                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                </label>
-            ))}
-        </div>
-    );
-}
+export default SettingsPanel;

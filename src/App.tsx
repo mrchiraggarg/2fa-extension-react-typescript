@@ -6,7 +6,6 @@ import AddAccountForm from './components/AddAccountForm';
 import { hash } from './utils/hash';
 import './popup.css';
 
-
 const App: React.FC = () => {
   const [locked, setLocked] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -15,6 +14,19 @@ const App: React.FC = () => {
   const [passInput, setPassInput] = useState('');
   const [failedBiometric, setFailedBiometric] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const storedSettings = await getSettings();
+      const fallback = { darkMode: false, passcode: '', biometrics: false };
+      const finalSettings = { ...fallback, ...storedSettings };
+      setSettings(finalSettings);
+      setDarkMode(finalSettings.darkMode);
+    };
+    fetchSettings();
+    Notification.requestPermission();
+  }, []);
 
   useEffect(() => {
     chrome.storage.sync.get(['dark']).then((result) => {
@@ -66,17 +78,14 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    getSettings().then(setSettings);
-    Notification.requestPermission();
-  }, []);
-
-  useEffect(() => {
     if (settings?.darkMode) document.body.classList.add('dark');
     else document.body.classList.remove('dark');
   }, [settings]);
 
   useEffect(() => {
     chrome.storage.sync.set({ dark: darkMode.toString() });
+    if (darkMode) document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
   }, [darkMode]);
 
   useEffect(() => {
@@ -105,7 +114,7 @@ const App: React.FC = () => {
     let timeout: NodeJS.Timeout;
     const resetTimer = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => setLocked(true), 3);
+      timeout = setTimeout(() => setLocked(true), 3 * 60 * 1000);
     };
 
     ['click', 'keydown', 'mousemove'].forEach(event =>
@@ -138,16 +147,26 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <input type="file" accept="application/json" onChange={handleImport} />
-      <button onClick={handleExport}>Export Backup</button>
-      <button className="toggle-dark" onClick={() => setDarkMode(!darkMode)}>
-        {darkMode ? '☀️' : '🌙'}
-      </button>
+      <div className="toolbar">
+        <label className="import-label">
+          📁 Import
+          <input type="file" accept="application/json" onChange={handleImport} style={{ display: 'none' }} />
+        </label>
+        <button onClick={handleExport}>💾 Export</button>
+        <button className="toggle-dark" onClick={() => setDarkMode(!darkMode)}>
+          {darkMode ? '☀️' : '🌙'}
+        </button>
+      </div>
       <h2>2FA Authenticator</h2>
       <h3>Next code refresh in: {timeLeft}s</h3>
       {accounts.map((acc, i) => (
         <AccountComponent account={acc} key={i} onDelete={loadAccounts} onUpdate={loadAccounts} />
       ))}
+      
+      <button onClick={() => setShowSettings(!showSettings)}>
+        ⚙️ Settings
+      </button>
+
       <AddAccountForm onAdd={loadAccounts} />
     </div>
   );
