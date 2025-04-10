@@ -28,12 +28,17 @@ const AccountComponent: React.FC<Props> = ({ account, onDelete, onUpdate }) => {
   };
 
   return (
-    <div className="account">
-      <strong>{account.label}</strong>: {otp}
-      <button onClick={handlePinToggle}>
-        {account.pinned ? '📌' : '📍'}
-      </button>
-      <button onClick={handleDelete}>🗑</button>
+    <div className="account-item">
+      <div className="account-info">
+        <div className="account-label">{account.label}</div>
+        <div className="account-otp">{otp}</div>
+      </div>
+      <div className="account-actions">
+        <button onClick={handlePinToggle}>
+          {account.pinned ? '📌 Unpin' : '📍 Pin'}
+        </button>
+        <button onClick={handleDelete}>🗑 Delete</button>
+      </div>
     </div>
   );
 };

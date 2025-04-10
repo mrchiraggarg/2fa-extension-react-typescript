@@ -165,8 +165,8 @@ const App: React.FC = () => {
           {darkMode ? '☀️' : '🌙'}
         </button>
       </div>
-      <h2>2FA Authenticator</h2>
-      <h3>Next code refresh in: {timeLeft}s</h3>
+      <h2 style={{ textAlign: 'center' }}>2FA Authenticator</h2>
+      <h3 style={{ textAlign: 'center' }}>Next code refresh in: {timeLeft}s</h3>
       {accounts.map((acc, i) => (
         <AccountComponent account={acc} key={i} onDelete={loadAccounts} onUpdate={loadAccounts} />
       ))}
