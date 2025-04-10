@@ -19,7 +19,7 @@ export async function getKey(): Promise<CryptoKey> {
   } else {
     const key = await generateKey();
     const rawKey = await crypto.subtle.exportKey('raw', key);
-    const rawBase64 = btoa(String.fromCharCode(...new Uint8Array(rawKey)));
+    const rawBase64 = btoa(String.fromCharCode(...Array.from(new Uint8Array(rawKey))));
     localStorage.setItem(KEY_NAME, rawBase64);
     return key;
   }
@@ -36,7 +36,7 @@ export async function encrypt(text: string): Promise<string> {
   combined.set(iv, 0);
   combined.set(new Uint8Array(encrypted), iv.length);
 
-  return btoa(String.fromCharCode(...combined));
+  return btoa(String.fromCharCode(...Array.from(combined)));
 }
 
 export async function decrypt(data: string): Promise<string> {
