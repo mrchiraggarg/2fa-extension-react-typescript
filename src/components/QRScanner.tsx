@@ -1,61 +1,67 @@
-import React, { useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useEffect, useRef } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 
 type Props = {
-  onScan: (secret: string, label: string) => void;
   onScanSuccess: (url: string) => void;
+  onScan: (secret: string, label: string) => void;
   onClose: () => void;
 };
 
-const QRScanner: React.FC<Props> = ({ onScan, onScanSuccess, onClose }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
+  const scannerRef = useRef<HTMLDivElement>(null);
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  useEffect(() => {
+    if (!scannerRef.current) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      if (!reader.result) return;
+    const html5QrCode = new Html5Qrcode(scannerRef.current.id);
+    html5QrCodeRef.current = html5QrCode;
 
-      try {
-        const { Html5Qrcode } = await import('html5-qrcode');
-        const qrCodeScanner = new Html5Qrcode(/* just an ID, not a real DOM node needed */ 'html5qr-temp');
+    Html5Qrcode.getCameras().then((devices) => {
+      if (devices && devices.length) {
+        const cameraId = devices[0].id;
+        html5QrCode.start(
+          cameraId,
+          { fps: 10, qrbox: 250 },
+          (scannedText) => {
+            if (!scannedText.startsWith('otpauth://')) return;
 
-        const decoded = await qrCodeScanner.scanFile(file, true);
+            try {
+              const url = new URL(scannedText);
+              const secret = url.searchParams.get('secret') || '';
+              const label = decodeURIComponent(url.pathname).split(':')[1]?.replace('/', '') || 'Unnamed';
 
-        if (decoded.startsWith('otpauth://')) {
-          const url = new URL(decoded);
-          const secret = url.searchParams.get('secret') || '';
-          const label = decodeURIComponent(url.pathname).split(':')[1]?.replace('/', '') || 'Unnamed';
-
-          if (secret) {
-            onScan(secret, label);
-            onScanSuccess(decoded);
-          } else {
-            alert('Secret not found in QR');
+              if (secret) {
+                onScan(secret, label);
+                onScanSuccess(scannedText);
+                html5QrCode.stop().then(() => {
+                  console.log('QR scanning stopped.');
+                });
+              }
+            } catch (err) {
+              alert('Invalid QR code');
+              console.error(err);
+            }
+          },
+          (errorMessage) => {
+            // You can ignore scan errors, they're common
           }
-        } else {
-          alert('Not a valid OTP QR');
-        }
-      } catch (err) {
-        console.error('QR decode failed:', err);
-        alert('Failed to read QR from image');
+        );
       }
-    };
+    }).catch((err) => {
+      console.error('Camera error:', err);
+      alert('Camera access denied or not found.');
+    });
 
-    reader.readAsDataURL(file);
-  };
+    return () => {
+      html5QrCode.stop().catch((err) => console.error('Failed to stop QR scanner', err));
+    };
+  }, []);
 
   return (
-    <div style={{ padding: '1rem', textAlign: 'center' }}>
-      <h3>Select QR Image</h3>
-      <input
-        type="file"
-        accept="image/*"
-        ref={inputRef}
-        onChange={handleFileChange}
-      />
+    <div style={{ padding: '1rem' }}>
+      <h3>📷 Scan QR Code</h3>
+      <div id="qr-reader" ref={scannerRef} style={{ width: '100%', height: '280px' }} />
       <button onClick={onClose} style={{ marginTop: '1rem' }}>Cancel</button>
     </div>
   );
