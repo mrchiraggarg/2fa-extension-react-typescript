@@ -14,9 +14,13 @@ const App: React.FC = () => {
   const [settings, setSettings] = useState<any>();
   const [passInput, setPassInput] = useState('');
   const [failedBiometric, setFailedBiometric] = useState(false);
-  const [darkMode, setDarkMode] = useState<boolean>(
-    localStorage.getItem('dark') === 'true'
-  );
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    chrome.storage.sync.get(['dark']).then((result) => {
+      setDarkMode(result.dark === 'true');
+    });
+  }, []);
 
   const handleUnlock = async () => {
     try {
@@ -72,7 +76,7 @@ const App: React.FC = () => {
   }, [settings]);
 
   useEffect(() => {
-    localStorage.setItem('dark', darkMode.toString());
+    chrome.storage.sync.set({ dark: darkMode.toString() });
   }, [darkMode]);
 
   useEffect(() => {
@@ -101,7 +105,7 @@ const App: React.FC = () => {
     let timeout: NodeJS.Timeout;
     const resetTimer = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => setLocked(true), 3 * 60 * 1000);
+      timeout = setTimeout(() => setLocked(true), 3);
     };
 
     ['click', 'keydown', 'mousemove'].forEach(event =>
