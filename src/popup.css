@@ -309,6 +309,75 @@ body.dark .scan-btn {
   background-color: #45b36b;
 }
 
+.qr-upload {
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 12px;
+  text-align: center;
+  font-family: sans-serif;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.qr-title {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.file-label {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.file-label:hover {
+  background-color: #0056b3;
+}
+
+.file-input {
+  display: none;
+}
+
+.cancel-btn {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #c82333;
+}
+
+body.dark .qr-upload {
+  background-color: #1e1e1e;
+  color: #eee;
+}
+
+body.dark .file-label {
+  background-color: #3399ff;
+}
+
+body.dark .file-label:hover {
+  background-color: #1d7eea;
+}
+
+body.dark .cancel-btn {
+  background-color: #d94c4c;
+}
+
+body.dark .cancel-btn:hover {
+  background-color: #b63a3a;
+}
 
 /* Dark mode support */
 body.dark {
