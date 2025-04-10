@@ -101,16 +101,12 @@ const App: React.FC = () => {
       const now = Math.floor(Date.now() / 1000);
       const newTime = 30 - (now % 30);
       setTimeLeft(newTime);
-      
-      if (newTime === 30 && Notification.permission === 'granted' && accounts.length) {
-        const labels = accounts.map(a => a.label).slice(0, 3).join(', ');
-        const extra = accounts.length > 3 ? ` +${accounts.length - 3} more` : '';
-      
+
+      if (newTime === 30 && Notification.permission === 'granted') {
         new Notification('🔐 OTPs Refreshed', {
-          body: `Updated: ${labels}${extra}`,
+          body: 'Your 2FA codes have just been updated.',
         });
       }
-      
     };
 
     updateTime();
