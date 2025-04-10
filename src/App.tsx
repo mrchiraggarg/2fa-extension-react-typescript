@@ -4,6 +4,7 @@ import { getSettings, saveSettings } from './utils/settings';
 import AccountComponent from './components/Account';
 import AddAccountForm from './components/AddAccountForm';
 import { hash } from './utils/hash';
+import SettingsPanel from './components/SettingsPanel';
 import './popup.css';
 
 const App: React.FC = () => {
@@ -162,10 +163,17 @@ const App: React.FC = () => {
       {accounts.map((acc, i) => (
         <AccountComponent account={acc} key={i} onDelete={loadAccounts} onUpdate={loadAccounts} />
       ))}
-      
-      <button onClick={() => setShowSettings(!showSettings)}>
+
+      <button
+        onClick={() => {
+          console.log('Settings clicked');
+          setShowSettings(!showSettings);
+        }}
+      >
         ⚙️ Settings
       </button>
+      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+
 
       <AddAccountForm onAdd={loadAccounts} />
     </div>
