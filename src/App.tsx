@@ -142,7 +142,7 @@ const App: React.FC = () => {
       <h2>2FA Authenticator</h2>
       <h3>Next code refresh in: {timeLeft}s</h3>
       {accounts.map((acc, i) => (
-        <AccountComponent account={acc} key={i} onDelete={loadAccounts} />
+        <AccountComponent account={acc} key={i} onDelete={loadAccounts} onUpdate={loadAccounts} />
       ))}
       <AddAccountForm onAdd={loadAccounts} />
     </div>
