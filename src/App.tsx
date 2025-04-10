@@ -50,8 +50,15 @@ const App: React.FC = () => {
 
   const handlePasscodeSubmit = async () => {
     const hashed = await hash(passInput);
-    if (hashed === settings?.passcode) setLocked(false);
-    else alert('Wrong passcode');
+    if (hashed === settings?.passcode) {
+      console.log('Passcode matched. Unlocking...');
+      setLocked(false);
+      setFailedBiometric(false);
+      // Optional: force refresh UI
+      window.location.reload();
+    } else {
+      alert('Wrong passcode');
+    }
   };
 
   const loadAccounts = async () => {
