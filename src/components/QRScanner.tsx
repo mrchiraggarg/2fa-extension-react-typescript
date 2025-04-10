@@ -47,15 +47,17 @@ const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
     };
 
     return (
-        <div className="qr-modal">
+        <div style={{ height: '300px', position: 'relative' }}>
             <h3>Scan QR Code</h3>
             <QrScanner
                 delay={300}
-                style={previewStyle}
                 onError={handleError}
                 onScan={handleScan}
+                style={{ width: '100%', height: '100%' }}
             />
-            <button onClick={onClose}>Cancel</button>
+            <button onClick={onClose} style={{ position: 'absolute', top: 10, right: 10 }}>
+                ✖
+            </button>
         </div>
     );
 };

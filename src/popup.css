@@ -49,3 +49,11 @@ body.dark {
   background: #222;
   color: white;
 }
+
+body, html {
+  width: 300px;
+  min-height: 400px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
