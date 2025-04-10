@@ -14,6 +14,7 @@
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.1",
+    "html5-qrcode": "^2.3.8",
     "otplib": "^12.0.1",
     "process": "^0.11.10",
     "react": "^19.1.0",

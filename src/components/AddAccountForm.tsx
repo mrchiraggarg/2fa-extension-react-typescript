@@ -13,6 +13,12 @@ const AddAccountForm: React.FC<Props> = ({ onAdd }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!label || !secret) {
+      alert('Label and Secret are required.');
+      return;
+    }
+
     const newAccount: Account = { label, secret };
     const current = await getAccounts();
     await saveAccounts([...current, newAccount]);
@@ -21,36 +27,41 @@ const AddAccountForm: React.FC<Props> = ({ onAdd }) => {
     setSecret('');
   };
 
-  const handleQRScan = (secret: string, label: string) => {
-    setLabel(label);
-    setSecret(secret);
+  const handleQRScan = (scannedSecret: string, scannedLabel: string) => {
+    setLabel(scannedLabel);
+    setSecret(scannedSecret);
     setShowQR(false);
   };
 
-
   return (
-    <>
+    <div className="add-account">
       {showQR ? (
-        <QRScanner onScan={handleQRScan} onClose={() => setShowQR(false)} />
+        <QRScanner
+          onScan={handleQRScan}
+          onScanSuccess={(url) => console.log('Scanned:', url)}
+          onClose={() => setShowQR(false)}
+        />
       ) : (
-
-        <form onSubmit={handleSubmit}>
-          <input
-            placeholder="Label"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            required
-          />
-          <input
-            placeholder="Secret"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            required
-          />
-          <button type="submit">Add</button>
-        </form>
+        <>
+          <form onSubmit={handleSubmit}>
+            <input
+              placeholder="Label (e.g. GitHub)"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              required
+            />
+            <input
+              placeholder="Secret (Base32)"
+              value={secret}
+              onChange={(e) => setSecret(e.target.value)}
+              required
+            />
+            <button type="submit">Add</button>
+          </form>
+          <button onClick={() => setShowQR(true)}>📷 Scan QR</button>
+        </>
       )}
-    </>
+    </div>
   );
 };
 
