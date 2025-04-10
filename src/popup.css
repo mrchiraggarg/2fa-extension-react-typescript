@@ -228,6 +228,87 @@ input[type="file"] {
 .cancel-btn:hover {
   background-color: #c82333;
 }
+.add-account {
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  font-family: sans-serif;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  margin-top: 10px;
+}
+
+.add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-field {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.full-width-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.full-width-btn:hover {
+  background-color: #0056b3;
+}
+
+.scan-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.scan-btn:hover {
+  background-color: #218838;
+}
+
+body.dark .add-account {
+  background-color: #1e1e1e;
+  color: #eee;
+}
+
+body.dark .input-field {
+  background-color: #2a2a2a;
+  color: #fff;
+  border-color: #555;
+}
+
+body.dark .full-width-btn {
+  background-color: #3399ff;
+}
+
+body.dark .scan-btn {
+  background-color: #45b36b;
+}
+
 
 /* Dark mode support */
 body.dark {

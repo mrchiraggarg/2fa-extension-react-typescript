@@ -43,22 +43,24 @@ const AddAccountForm: React.FC<Props> = ({ onAdd }) => {
         />
       ) : (
         <>
-          <form onSubmit={handleSubmit}>
+          <form className="add-form" onSubmit={handleSubmit}>
             <input
-              placeholder="NickName (e.g. GitHub)"
+              className="input-field"
+              placeholder="Nickname (e.g. GitHub)"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               required
             />
             <input
+              className="input-field"
               placeholder="Secret (Base32)"
               value={secret}
               onChange={(e) => setSecret(e.target.value)}
               required
             />
-            <button type="submit">Add</button>
+            <button type="submit" className="full-width-btn">➕ Add Account</button>
           </form>
-          <button onClick={() => setShowQR(true)}>📷 Scan QR</button>
+          <button className="scan-btn" onClick={() => setShowQR(true)}>📷 Scan QR Code</button>
         </>
       )}
     </div>
