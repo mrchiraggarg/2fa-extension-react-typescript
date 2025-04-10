@@ -1,103 +1,64 @@
-import React, { useEffect, useState } from 'react';
-import QrScanner from 'react-qr-scanner';
+import React, { useRef } from 'react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 type Props = {
-    onScanSuccess: (url: string) => void;
-    onScan: (secret: string, label: string) => void;
-    onClose: () => void;
+  onScan: (secret: string, label: string) => void;
+  onScanSuccess: (url: string) => void;
+  onClose: () => void;
 };
 
-const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
-    const [cameraAllowed, setCameraAllowed] = useState(true);
-    const [cameraError, setCameraError] = useState<string | null>(null);
+const QRScanner: React.FC<Props> = ({ onScan, onScanSuccess, onClose }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(() => setCameraAllowed(true))
-            .catch((err) => {
-                console.error('Camera access denied:', err);
-                setCameraAllowed(false);
-                setCameraError('Camera permission denied or not available.');
-            });
-    }, []);
-    
-    const handleScan = (data: { text?: string } | null) => {
-        if (!data?.text) return;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-        const scanned = data.text;
-        try {
-            if (scanned.startsWith('otpauth://')) {
-                const url = new URL(scanned);
-                const secret = url.searchParams.get('secret') || '';
-                const label = decodeURIComponent(url.pathname).split(':')[1]?.replace('/', '') || 'Unnamed';
+    const reader = new FileReader();
+    reader.onload = async () => {
+      if (!reader.result) return;
 
-                if (secret) {
-                    onScan(secret, label);
-                    onScanSuccess(scanned);
-                } else {
-                    alert('No secret found in QR Code.');
-                }
-            } else {
-                alert('Invalid QR Code format');
-            }
-        } catch (err) {
-            console.error('Failed to parse QR:', err);
-            alert('Failed to parse QR Code.');
+      try {
+        const { Html5Qrcode } = await import('html5-qrcode');
+        const qrCodeScanner = new Html5Qrcode(/* just an ID, not a real DOM node needed */ 'html5qr-temp');
+
+        const decoded = await qrCodeScanner.scanFile(file, true);
+
+        if (decoded.startsWith('otpauth://')) {
+          const url = new URL(decoded);
+          const secret = url.searchParams.get('secret') || '';
+          const label = decodeURIComponent(url.pathname).split(':')[1]?.replace('/', '') || 'Unnamed';
+
+          if (secret) {
+            onScan(secret, label);
+            onScanSuccess(decoded);
+          } else {
+            alert('Secret not found in QR');
+          }
+        } else {
+          alert('Not a valid OTP QR');
         }
+      } catch (err) {
+        console.error('QR decode failed:', err);
+        alert('Failed to read QR from image');
+      }
     };
 
-    const handleError = (err: any) => {
-        console.error('QR Scan Error:', err);
-        setCameraError('Error accessing camera.');
-    };
+    reader.readAsDataURL(file);
+  };
 
-    const previewStyle = {
-        height: 240,
-        width: '100%',
-        objectFit: 'cover' as const,
-        borderRadius: '12px',
-    };
-
-    return (
-        <div style={{
-            minHeight: '350px',
-            padding: '1rem',
-            textAlign: 'center',
-            position: 'relative',
-            background: '#111',
-            color: '#fff',
-            borderRadius: '12px'
-        }}>
-            <h3 style={{ marginBottom: '1rem' }}>Scan QR Code</h3>
-
-            {!cameraAllowed ? (
-                <p style={{ color: 'red' }}>{cameraError}</p>
-            ) : (
-                <QrScanner
-                    delay={300}
-                    onError={handleError}
-                    onScan={handleScan}
-                    style={previewStyle}
-                />
-            )}
-
-            <button
-                onClick={onClose}
-                style={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 10,
-                    background: 'transparent',
-                    color: '#fff',
-                    border: 'none',
-                    fontSize: '1.2rem',
-                    cursor: 'pointer',
-                }}
-            >
-                ✖
-            </button>
-        </div>
-    );
+  return (
+    <div style={{ padding: '1rem', textAlign: 'center' }}>
+      <h3>Select QR Image</h3>
+      <input
+        type="file"
+        accept="image/*"
+        ref={inputRef}
+        onChange={handleFileChange}
+      />
+      <button onClick={onClose} style={{ marginTop: '1rem' }}>Cancel</button>
+    </div>
+  );
 };
 
 export default QRScanner;
