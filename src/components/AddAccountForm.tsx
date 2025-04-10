@@ -45,7 +45,7 @@ const AddAccountForm: React.FC<Props> = ({ onAdd }) => {
         <>
           <form onSubmit={handleSubmit}>
             <input
-              placeholder="Label (e.g. GitHub)"
+              placeholder="NickName (e.g. GitHub)"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               required

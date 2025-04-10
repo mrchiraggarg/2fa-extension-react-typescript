@@ -56,7 +56,7 @@ const QRScanner: React.FC<Props> = ({ onScanSuccess, onScan, onClose }) => {
       <h3>📸 Upload a QR Code</h3>
       <input type="file" accept="image/*" onChange={handleFile} />
       <canvas ref={canvasRef} style={{ display: 'none' }} />
-      <button onClick={onClose} style={{ marginTop: '1rem' }}>Cancel</button>
+      <button className='button-100W' onClick={onClose} style={{ marginTop: '1rem' }}>Cancel</button>
     </div>
   );
 };
